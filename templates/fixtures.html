@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>Fixtures & Results</h2>
+
+<table class="table table-bordered table-striped mt-3">
+    <thead class="table-success">
+        <tr>
+            <th>Round</th>
+            <th>Home School</th>
+            <th>Away School</th>
+            <th>Date</th>
+            <th>Venue</th>
+            <th>Score</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for f in fixtures %}
+        <tr>
+            <td>{{ f.RoundName }}</td>
+            <td>{{ f.HomeSchool }}</td>
+            <td>{{ f.AwaySchool }}</td>
+            <td>{{ f.MatchDate }}</td>
+            <td>{{ f.Venue }}</td>
+            <td>{{ f.HomeScore }} - {{ f.AwayScore }}</td>
+            <td>{{ f.Status }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}

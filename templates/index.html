@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="p-5 mb-4 bg-light rounded-3">
+    <h1 class="display-5 fw-bold">National Primary Schools Soccer Competition</h1>
+    <p class="lead">
+        A national knockout-style school soccer competition platform for schools, coaches, teams and families.
+    </p>
+    <a href="/register-school" class="btn btn-success btn-lg">Register Your School</a>
+    <a href="/fixtures" class="btn btn-outline-success btn-lg">View Fixtures</a>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <h4>Boys Competition</h4>
+        <p>School soccer competition for eligible boys teams.</p>
+    </div>
+
+    <div class="col-md-4">
+        <h4>Girls Competition</h4>
+        <p>Dedicated girls school soccer competition pathway.</p>
+    </div>
+
+    <div class="col-md-4">
+        <h4>National Finals</h4>
+        <p>Regional winners progress through knockout rounds to national finals.</p>
+    </div>
+</div>
+
+{% endblock %}
