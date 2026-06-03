@@ -1,6 +1,8 @@
 import os
 import pyodbc
 
+pyodbc.pooling = False
+
 def get_connection():
     return pyodbc.connect(
         "DRIVER={ODBC Driver 18 for SQL Server};"
@@ -10,5 +12,5 @@ def get_connection():
         f"PWD={os.getenv('DB_PASSWORD')};"
         "Encrypt=yes;"
         "TrustServerCertificate=no;"
-        "Connection Timeout=60;"
+        "Connection Timeout=120;"
     )

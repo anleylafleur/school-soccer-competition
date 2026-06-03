@@ -247,5 +247,14 @@ def upload_schools():
 
     return render_template("upload_schools.html")
 
+@app.route("/health")
+def health():
+    try:
+        conn = get_connection()
+        conn.close()
+        return "Database Connection OK"
+    except Exception as e:
+        return f"Database Error: {str(e)}", 500
+
 if __name__ == "__main__":
     app.run(debug=True)
