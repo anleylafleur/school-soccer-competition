@@ -191,7 +191,6 @@ def upload_schools():
         skipped = 0
 
         for _, row in df.iterrows():
-
             school_name = str(row["SchoolName"]).strip()
             school_type = str(row["SchoolType"]).strip()
             state_code = str(row["StateCode"]).strip()
@@ -205,13 +204,16 @@ def upload_schools():
                 continue
 
             cursor.execute("""
-                IF NOT EXISTS (
-                    SELECT 1
-                    FROM Schools
-                    WHERE SchoolName = ?
-                      AND StateCode = ?
-                )
-                BEGIN
+                SELECT COUNT(*)
+                FROM Schools
+                WHERE SchoolName = ?
+                  AND StateCode = ?
+            """, school_name, state_code)
+
+            exists = cursor.fetchone()[0]
+
+            if exists == 0:
+                cursor.execute("""
                     INSERT INTO Schools
                     (
                         SchoolName,
@@ -223,30 +225,31 @@ def upload_schools():
                         Phone
                     )
                     VALUES (?, ?, ?, ?, ?, ?, ?)
-                END
-            """,
-                school_name,
-                state_code,
-                school_name,
-                school_type,
-                state_code,
-                region,
-                contact_name,
-                email,
-                phone
-            )
-
-            inserted += 1
+                """,
+                    school_name,
+                    school_type,
+                    state_code,
+                    region,
+                    contact_name,
+                    email,
+                    phone
+                )
+                inserted += 1
+            else:
+                skipped += 1
 
         conn.commit()
         cursor.close()
         conn.close()
 
-        flash(f"Upload completed. Processed: {len(df)}, inserted/already existed: {inserted}, skipped: {skipped}", "success")
+        flash(
+            f"Upload completed. Processed: {len(df)}, inserted: {inserted}, skipped/already existed: {skipped}",
+            "success"
+        )
+
         return redirect(url_for("upload_schools"))
 
     return render_template("upload_schools.html")
-
 @app.route("/health")
 def health():
     try:
