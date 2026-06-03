@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+
+    {% if school %}
+        <h2>Edit School</h2>
+    {% else %}
+        <h2>Add School</h2>
+    {% endif %}
+
+    <form method="post">
+
+        <div class="mb-3">
+            <label class="form-label">School Name</label>
+            <input type="text" name="school_name" class="form-control" value="{{ school.SchoolName if school else '' }}" required>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">School Type</label>
+            <select name="school_type" class="form-control" required>
+                <option value="">Select Type</option>
+                {% for type in ['Public', 'Catholic', 'Independent'] %}
+                    <option value="{{ type }}" {% if school and school.SchoolType == type %}selected{% endif %}>{{ type }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">State Code</label>
+            <select name="state_code" class="form-control" required>
+                {% for state in ['NSW', 'VIC', 'QLD', 'SA', 'WA', 'TAS', 'ACT', 'NT'] %}
+                    <option value="{{ state }}" {% if school and school.StateCode == state %}selected{% endif %}>{{ state }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Region</label>
+            <input type="text" name="region" class="form-control" value="{{ school.Region if school else '' }}">
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Contact Name</label>
+            <input type="text" name="contact_name" class="form-control" value="{{ school.ContactName if school else '' }}">
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Email</label>
+            <input type="email" name="email" class="form-control" value="{{ school.Email if school else '' }}">
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Phone</label>
+            <input type="text" name="phone" class="form-control" value="{{ school.Phone if school else '' }}">
+        </div>
+
+        <button type="submit" class="btn btn-success">Save</button>
+        <a href="{{ url_for('schools') }}" class="btn btn-secondary">Cancel</a>
+
+    </form>
+
+</div>
+{% endblock %}

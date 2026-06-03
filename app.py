@@ -258,6 +258,109 @@ def health():
         return "Database Connection OK"
     except Exception as e:
         return f"Database Error: {str(e)}", 500
+    
+    @app.route("/schools")
+def schools():
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT SchoolID, SchoolName, SchoolType, StateCode, Region, ContactName, Email, Phone
+        FROM Schools
+        ORDER BY StateCode, Region, SchoolName
+    """)
+
+    schools = cursor.fetchall()
+    conn.close()
+
+    return render_template("schools.html", schools=schools)
+
+
+@app.route("/schools/add", methods=["GET", "POST"])
+def add_school():
+    if request.method == "POST":
+        school_name = request.form["school_name"]
+        school_type = request.form["school_type"]
+        state_code = request.form["state_code"]
+        region = request.form["region"]
+        contact_name = request.form["contact_name"]
+        email = request.form["email"]
+        phone = request.form["phone"]
+
+        conn = get_connection()
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            INSERT INTO Schools
+            (SchoolName, SchoolType, StateCode, Region, ContactName, Email, Phone)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        """, school_name, school_type, state_code, region, contact_name, email, phone)
+
+        conn.commit()
+        conn.close()
+
+        flash("School added successfully.", "success")
+        return redirect(url_for("schools"))
+
+    return render_template("school_form.html", school=None)
+
+
+@app.route("/schools/edit/<int:school_id>", methods=["GET", "POST"])
+def edit_school(school_id):
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    if request.method == "POST":
+        school_name = request.form["school_name"]
+        school_type = request.form["school_type"]
+        state_code = request.form["state_code"]
+        region = request.form["region"]
+        contact_name = request.form["contact_name"]
+        email = request.form["email"]
+        phone = request.form["phone"]
+
+        cursor.execute("""
+            UPDATE Schools
+            SET SchoolName = ?,
+                SchoolType = ?,
+                StateCode = ?,
+                Region = ?,
+                ContactName = ?,
+                Email = ?,
+                Phone = ?
+            WHERE SchoolID = ?
+        """, school_name, school_type, state_code, region, contact_name, email, phone, school_id)
+
+        conn.commit()
+        conn.close()
+
+        flash("School updated successfully.", "success")
+        return redirect(url_for("schools"))
+
+    cursor.execute("""
+        SELECT SchoolID, SchoolName, SchoolType, StateCode, Region, ContactName, Email, Phone
+        FROM Schools
+        WHERE SchoolID = ?
+    """, school_id)
+
+    school = cursor.fetchone()
+    conn.close()
+
+    return render_template("school_form.html", school=school)
+
+
+@app.route("/schools/delete/<int:school_id>", methods=["POST"])
+def delete_school(school_id):
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("DELETE FROM Schools WHERE SchoolID = ?", school_id)
+
+    conn.commit()
+    conn.close()
+
+    flash("School deleted successfully.", "success")
+    return redirect(url_for("schools"))
 
 if __name__ == "__main__":
     app.run(debug=True)
