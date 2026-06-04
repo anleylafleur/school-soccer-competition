@@ -373,16 +373,17 @@ def players():
     cursor = conn.cursor()
 
     cursor.execute("""
-        SELECT PlayerID, PlayerName, Gender, AgeGroup, Position, TeamID, SchoolID
+        SELECT *
         FROM Players
-        ORDER BY PlayerName
+        ORDER BY PlayerID DESC
     """)
 
     players = cursor.fetchall()
+    columns = [column[0] for column in cursor.description]
+
     conn.close()
 
-    return render_template("players.html", players=players)
-
+    return render_template("players.html", players=players, columns=columns)
 
 @app.route("/results")
 def results():
