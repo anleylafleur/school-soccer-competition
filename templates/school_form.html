@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+    <h2>{{ 'Edit School' if school else 'Add School' }}</h2>
+    <form method="post" class="mt-3">
+        <div class="mb-3"><label class="form-label">School Name</label><input class="form-control" name="school_name" value="{{ school.SchoolName if school else '' }}" required></div>
+        <div class="mb-3"><label class="form-label">School Type</label>
+            <select class="form-select" name="school_type" required>
+                {% for t in ['Public','Catholic','Independent'] %}<option value="{{ t }}" {% if school and school.SchoolType == t %}selected{% endif %}>{{ t }}</option>{% endfor %}
+            </select>
+        </div>
+        <div class="mb-3"><label class="form-label">State Code</label>
+            <select class="form-select" name="state_code" required>
+                {% for s in ['NSW','VIC','QLD','SA','WA','TAS','ACT','NT'] %}<option value="{{ s }}" {% if school and school.StateCode == s %}selected{% endif %}>{{ s }}</option>{% endfor %}
+            </select>
+        </div>
+        <div class="mb-3"><label class="form-label">Region</label><input class="form-control" name="region" value="{{ school.Region if school else '' }}"></div>
+        <div class="mb-3"><label class="form-label">Contact Name</label><input class="form-control" name="contact_name" value="{{ school.ContactName if school else '' }}"></div>
+        <div class="mb-3"><label class="form-label">Email</label><input type="email" class="form-control" name="email" value="{{ school.Email if school else '' }}"></div>
+        <div class="mb-3"><label class="form-label">Phone</label><input class="form-control" name="phone" value="{{ school.Phone if school else '' }}"></div>
+        <button class="btn btn-success">Save</button>
+        <a class="btn btn-secondary" href="{{ url_for('schools') }}">Cancel</a>
+    </form>
+</div>
+{% endblock %}
