@@ -1,30 +1,73 @@
 {% extends "base.html" %}
 
 {% block content %}
+<div class="container mt-4">
 
-<h2>Admin Dashboard</h2>
+    <h2 class="mb-4">Admin Dashboard</h2>
 
-<div class="row mt-4">
-    <div class="col-md-4">
-        <div class="card p-3 shadow-sm">
-            <h4>{{ school_count }}</h4>
-            <p>Schools</p>
+    <div class="row g-4">
+
+        <div class="col-md-4">
+            <a href="{{ url_for('schools') }}" class="text-decoration-none">
+                <div class="card shadow-sm border-primary">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Schools</h5>
+                        <h2>{{ school_count }}</h2>
+                        <p class="text-muted">Click to view schools</p>
+                    </div>
+                </div>
+            </a>
         </div>
+
+        <div class="col-md-4">
+            <a href="{{ url_for('competitions') }}" class="text-decoration-none">
+                <div class="card shadow-sm border-success">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Competitions</h5>
+                        <h2>{{ competition_count }}</h2>
+                        <p class="text-muted">Click to view competitions</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-md-4">
+            <a href="{{ url_for('fixtures') }}" class="text-decoration-none">
+                <div class="card shadow-sm border-warning">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Fixtures</h5>
+                        <h2>{{ fixture_count }}</h2>
+                        <p class="text-muted">Click to view fixtures</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-md-4">
+            <a href="{{ url_for('players') }}" class="text-decoration-none">
+                <div class="card shadow-sm border-info">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Players</h5>
+                        <h2>{{ player_count }}</h2>
+                        <p class="text-muted">Click to view players</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-md-4">
+            <a href="{{ url_for('results') }}" class="text-decoration-none">
+                <div class="card shadow-sm border-danger">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Results</h5>
+                        <h2>{{ result_count }}</h2>
+                        <p class="text-muted">Click to view results</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+
     </div>
 
-    <div class="col-md-4">
-        <div class="card p-3 shadow-sm">
-            <h4>{{ competition_count }}</h4>
-            <p>Competitions</p>
-        </div>
-    </div>
-
-    <div class="col-md-4">
-        <div class="card p-3 shadow-sm">
-            <h4>{{ fixture_count }}</h4>
-            <p>Fixtures</p>
-        </div>
-    </div>
 </div>
-
 {% endblock %}

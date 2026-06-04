@@ -350,15 +350,55 @@ def admin_dashboard():
     cursor.execute("SELECT COUNT(*) FROM Fixtures")
     fixture_count = cursor.fetchone()[0]
 
+    cursor.execute("SELECT COUNT(*) FROM Players")
+    player_count = cursor.fetchone()[0]
+
+    cursor.execute("SELECT COUNT(*) FROM Results")
+    result_count = cursor.fetchone()[0]
+
     conn.close()
 
     return render_template(
         "admin_dashboard.html",
         school_count=school_count,
         competition_count=competition_count,
-        fixture_count=fixture_count
+        fixture_count=fixture_count,
+        player_count=player_count,
+        result_count=result_count
     )
 
+@app.route("/players")
+def players():
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT PlayerID, PlayerName, Gender, AgeGroup, Position, TeamID, SchoolID
+        FROM Players
+        ORDER BY PlayerName
+    """)
+
+    players = cursor.fetchall()
+    conn.close()
+
+    return render_template("players.html", players=players)
+
+
+@app.route("/results")
+def results():
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT ResultID, FixtureID, HomeScore, AwayScore, WinnerSchoolID, Status
+        FROM Results
+        ORDER BY ResultID DESC
+    """)
+
+    results = cursor.fetchall()
+    conn.close()
+
+    return render_template("results.html", results=results)
 
 if __name__ == "__main__":
     app.run(debug=True)
