@@ -1,17 +1,3 @@
-<<<<<<< HEAD
-from flask import Flask, render_template, request, redirect, url_for, flash, abort
-from db import get_connection
-from werkzeug.utils import secure_filename
-
-import os
-import pandas as pd
-
-
-# =========================================================
-# FLASK APP CONFIGURATION
-# =========================================================
-
-=======
 from flask import Flask, render_template, request, redirect, url_for, flash
 from db import get_connection
 from werkzeug.utils import secure_filename
@@ -20,7 +6,6 @@ import pandas as pd
 import os
 
 
->>>>>>> e6bb30e3c32320a55a0a4e3576676ff2cebeab41
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY", "school-soccer-secret")
 
@@ -29,130 +14,119 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
 
-<<<<<<< HEAD
-# =========================================================
-# FIFA / REGISTRY HIERARCHY CONFIGURATION
-# World -> Confederations -> Countries -> States/Provinces
-# -> Regions -> Associations -> Clubs -> Teams -> Players
-# =========================================================
+# ============================================================
+# FIFA REGISTRY ENTITY CONFIGURATION
+# ============================================================
 
 ENTITIES = {
     "worlds": {
-        "label": "Worlds",
+        "title": "Worlds",
         "table": "Worlds",
         "pk": "WorldID",
         "fields": ["WorldName", "Description"],
-        "order_by": "WorldID DESC",
+        "order_by": "WorldID DESC"
     },
     "confederations": {
-        "label": "Confederations",
+        "title": "Confederations",
         "table": "Confederations",
         "pk": "ConfederationID",
         "fields": ["WorldID", "ConfederationCode", "ConfederationName", "Headquarters"],
-        "order_by": "ConfederationID DESC",
+        "order_by": "ConfederationID DESC"
     },
     "countries": {
-        "label": "Countries",
+        "title": "Countries",
         "table": "Countries",
         "pk": "CountryID",
         "fields": ["ConfederationID", "CountryName", "FIFACountryCode", "ISO2Code", "ISO3Code"],
-        "order_by": "CountryID DESC",
+        "order_by": "CountryID DESC"
     },
     "states": {
-        "label": "States / Provinces",
+        "title": "States / Provinces",
         "table": "StatesProvinces",
         "pk": "StateProvinceID",
         "fields": ["CountryID", "StateProvinceName", "StateProvinceCode"],
-        "order_by": "StateProvinceID DESC",
+        "order_by": "StateProvinceID DESC"
     },
     "regions": {
-        "label": "Regions",
+        "title": "Regions",
         "table": "Regions",
         "pk": "RegionID",
         "fields": ["StateProvinceID", "RegionName"],
-        "order_by": "RegionID DESC",
+        "order_by": "RegionID DESC"
     },
     "associations": {
-        "label": "Associations",
+        "title": "Associations",
         "table": "Associations",
         "pk": "AssociationID",
         "fields": ["RegionID", "AssociationName", "AssociationCode", "AssociationType"],
-        "order_by": "AssociationID DESC",
+        "order_by": "AssociationID DESC"
     },
     "clubs": {
-        "label": "Clubs",
+        "title": "Clubs",
         "table": "Clubs",
         "pk": "ClubID",
         "fields": ["AssociationID", "ClubName", "ClubCode", "FoundedYear", "HomeGround"],
-        "order_by": "ClubID DESC",
+        "order_by": "ClubID DESC"
     },
     "teams": {
-        "label": "Teams",
+        "title": "Teams",
         "table": "Teams",
         "pk": "TeamID",
         "fields": ["ClubID", "TeamName", "AgeGroup", "Gender", "Division", "SeasonYear"],
-        "order_by": "TeamID DESC",
+        "order_by": "TeamID DESC"
     },
     "players": {
-        "label": "Players",
+        "title": "Players",
         "table": "Players",
         "pk": "PlayerID",
         "fields": [
-            "TeamID",
-            "FIFAConnectID",
-            "FirstName",
-            "LastName",
-            "DateOfBirth",
-            "Gender",
-            "Nationality",
-            "PreferredPosition",
-            "ShirtNumber",
-            "RegistrationStatus",
+            "TeamID", "FIFAConnectID", "FirstName", "LastName", "DateOfBirth",
+            "Gender", "Nationality", "PreferredPosition", "ShirtNumber", "RegistrationStatus"
         ],
-        "order_by": "PlayerID DESC",
-    },
+        "order_by": "PlayerID DESC"
+    }
 }
 
 
 SCHOOL_MODULES = {
     "schools": {
-        "label": "Schools",
+        "title": "Schools",
         "table": "Schools",
-        "url": "schools",
+        "pk": "SchoolID",
+        "order_by": "SchoolID DESC"
     },
     "competitions": {
-        "label": "Competitions",
+        "title": "Competitions",
         "table": "Competitions",
-        "url": "competitions",
+        "pk": "CompetitionID",
+        "order_by": "CompetitionID DESC"
     },
     "fixtures": {
-        "label": "Fixtures",
+        "title": "Fixtures",
         "table": "Fixtures",
-        "url": "fixtures",
+        "pk": "FixtureID",
+        "order_by": "FixtureID DESC"
     },
     "results": {
-        "label": "Results",
+        "title": "Results",
         "table": "Results",
-        "url": "results",
-    },
+        "pk": "ResultID",
+        "order_by": "ResultID DESC"
+    }
 }
 
 
-# =========================================================
+# ============================================================
 # HELPER FUNCTIONS
-# =========================================================
+# ============================================================
 
 def fetch_count(table_name):
-    """Return count from a table. If the table does not exist yet, return 0."""
-    try:
-        conn = get_connection()
-        cursor = conn.cursor()
-        cursor.execute(f"SELECT COUNT(*) FROM {table_name}")
-        count = cursor.fetchone()[0]
-        conn.close()
-        return count
-    except Exception:
-        return 0
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute(f"SELECT COUNT(*) FROM {table_name}")
+    count = cursor.fetchone()[0]
+    conn.close()
+    return count
 
 
 def fetch_all_from_table(table_name, order_by=None):
@@ -164,57 +138,35 @@ def fetch_all_from_table(table_name, order_by=None):
         sql += f" ORDER BY {order_by}"
 
     cursor.execute(sql)
-    rows = cursor.fetchall()
     columns = [column[0] for column in cursor.description]
-
+    records = cursor.fetchall()
     conn.close()
-    return rows, columns
+
+    return records, columns
 
 
-# =========================================================
-# HOME / DASHBOARD
-# =========================================================
+def fetch_one_by_id(table_name, pk, record_id):
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute(f"SELECT * FROM {table_name} WHERE {pk} = ?", record_id)
+    columns = [column[0] for column in cursor.description]
+    row = cursor.fetchone()
+    conn.close()
+
+    if row:
+        return dict(zip(columns, row))
+
+    return None
+
+
+# ============================================================
+# HOME / DASHBOARD / HEALTH CHECK
+# ============================================================
 
 @app.route("/")
 def index():
     return redirect(url_for("admin_dashboard"))
-
-
-@app.route("/admin")
-def admin_dashboard():
-    fifa_cards = []
-
-    for key, config in ENTITIES.items():
-        fifa_cards.append({
-            "key": key,
-            "label": config["label"],
-            "table": config["table"],
-            "count": fetch_count(config["table"]),
-            "url": url_for("list_records", entity=key),
-        })
-
-    school_cards = []
-
-    for key, config in SCHOOL_MODULES.items():
-        school_cards.append({
-            "key": key,
-            "label": config["label"],
-            "table": config["table"],
-            "count": fetch_count(config["table"]),
-            "url": url_for(config["url"]),
-        })
-
-    return render_template(
-        "admin_dashboard.html",
-        fifa_cards=fifa_cards,
-        school_cards=school_cards,
-        entities=ENTITIES,
-    )
-=======
-@app.route("/")
-def index():
-    return render_template("index.html")
->>>>>>> e6bb30e3c32320a55a0a4e3576676ff2cebeab41
 
 
 @app.route("/db-test")
@@ -230,15 +182,50 @@ def db_test():
         return f"DB ERROR: {str(e)}", 500
 
 
-<<<<<<< HEAD
-# =========================================================
-# FIFA / REGISTRY GENERIC CRUD ROUTES
-# =========================================================
+@app.route("/admin")
+def admin_dashboard():
+    fifa_cards = []
+    school_cards = []
+
+    for entity, config in ENTITIES.items():
+        try:
+            count = fetch_count(config["table"])
+        except Exception:
+            count = "N/A"
+
+        fifa_cards.append({
+            "name": config["title"],
+            "count": count,
+            "url": url_for("list_records", entity=entity)
+        })
+
+    for module, config in SCHOOL_MODULES.items():
+        try:
+            count = fetch_count(config["table"])
+        except Exception:
+            count = "N/A"
+
+        school_cards.append({
+            "name": config["title"],
+            "count": count,
+            "url": url_for("generic_module_list", module=module)
+        })
+
+    return render_template(
+        "admin_dashboard.html",
+        fifa_cards=fifa_cards,
+        school_cards=school_cards
+    )
+
+
+# ============================================================
+# FIFA GENERIC CRUD ROUTES
+# ============================================================
 
 @app.route("/<entity>")
 def list_records(entity):
     if entity not in ENTITIES:
-        abort(404)
+        return "Entity not found", 404
 
     config = ENTITIES[entity]
     records, columns = fetch_all_from_table(config["table"], config.get("order_by"))
@@ -249,14 +236,14 @@ def list_records(entity):
         config=config,
         columns=columns,
         records=records,
-        entities=ENTITIES,
+        mode="fifa"
     )
 
 
 @app.route("/<entity>/create", methods=["GET", "POST"])
 def create_record(entity):
     if entity not in ENTITIES:
-        abort(404)
+        return "Entity not found", 404
 
     config = ENTITIES[entity]
 
@@ -278,7 +265,7 @@ def create_record(entity):
         conn.commit()
         conn.close()
 
-        flash(f"{config['label']} record created successfully.", "success")
+        flash("Record created successfully.", "success")
         return redirect(url_for("list_records", entity=entity))
 
     return render_template(
@@ -286,19 +273,16 @@ def create_record(entity):
         entity=entity,
         config=config,
         record=None,
-        action="Create",
-        entities=ENTITIES,
+        action="Create"
     )
 
 
 @app.route("/<entity>/edit/<int:record_id>", methods=["GET", "POST"])
 def edit_record(entity, record_id):
     if entity not in ENTITIES:
-        abort(404)
+        return "Entity not found", 404
 
     config = ENTITIES[entity]
-    conn = get_connection()
-    cursor = conn.cursor()
 
     if request.method == "POST":
         fields = config["fields"]
@@ -310,52 +294,46 @@ def edit_record(entity, record_id):
         sql = f"""
             UPDATE {config['table']}
             SET {set_clause}
-            WHERE {config['pk']}=?
+            WHERE {config['pk']} = ?
         """
 
+        conn = get_connection()
+        cursor = conn.cursor()
         cursor.execute(sql, values)
         conn.commit()
         conn.close()
 
-        flash(f"{config['label']} record updated successfully.", "success")
+        flash("Record updated successfully.", "success")
         return redirect(url_for("list_records", entity=entity))
 
-    sql = f"SELECT * FROM {config['table']} WHERE {config['pk']}=?"
-    cursor.execute(sql, record_id)
-
-    columns = [column[0] for column in cursor.description]
-    row = cursor.fetchone()
-
-    record = dict(zip(columns, row)) if row else None
-    conn.close()
+    record = fetch_one_by_id(config["table"], config["pk"], record_id)
 
     return render_template(
         "form.html",
         entity=entity,
         config=config,
         record=record,
-        action="Edit",
-        entities=ENTITIES,
+        action="Edit"
     )
 
 
-@app.route("/<entity>/delete/<int:record_id>", methods=["POST", "GET"])
+@app.route("/<entity>/delete/<int:record_id>", methods=["POST"])
 def delete_record(entity, record_id):
     if entity not in ENTITIES:
-        abort(404)
+        return "Entity not found", 404
 
     config = ENTITIES[entity]
 
     conn = get_connection()
     cursor = conn.cursor()
-
-    sql = f"DELETE FROM {config['table']} WHERE {config['pk']}=?"
-    cursor.execute(sql, record_id)
-
+    cursor.execute(
+        f"DELETE FROM {config['table']} WHERE {config['pk']} = ?",
+        record_id
+    )
     conn.commit()
     conn.close()
 
-    flash(f"{config['label']} record deleted successfully.", "danger")
+    flash("Record deleted successfully.", "success")
     return redirect(url_for("list_records", entity=entity))
 
 
@@ -365,8 +343,8 @@ def hierarchy():
     cursor = conn.cursor()
 
     cursor.execute("SELECT * FROM vw_FIFA_PlayerHierarchy")
-    records = cursor.fetchall()
     columns = [column[0] for column in cursor.description]
+    records = cursor.fetchall()
 
     conn.close()
 
@@ -374,66 +352,37 @@ def hierarchy():
         "list.html",
         entity="hierarchy",
         config={
-            "label": "Full FIFA Player Hierarchy",
+            "title": "FIFA Player Hierarchy",
             "pk": "PlayerID",
-            "fields": [],
+            "fields": []
         },
         columns=columns,
         records=records,
-        entities=ENTITIES,
+        mode="readonly"
     )
 
 
-# =========================================================
-# SCHOOL COMPETITION ROUTES
-# =========================================================
+# ============================================================
+# SCHOOL COMPETITION MODULE ROUTES
+# ============================================================
 
-=======
-@app.route("/competitions")
-def competitions():
-    conn = get_connection()
-    cursor = conn.cursor()
+@app.route("/module/<module>")
+def generic_module_list(module):
+    if module not in SCHOOL_MODULES:
+        return "Module not found", 404
 
-    cursor.execute("""
-        SELECT CompetitionID, CompetitionName, GenderCategory, AgeLimit, Year, Status
-        FROM Competitions
-        ORDER BY Year DESC, CompetitionName
-    """)
+    config = SCHOOL_MODULES[module]
+    records, columns = fetch_all_from_table(config["table"], config.get("order_by"))
 
-    competitions = cursor.fetchall()
-    conn.close()
-
-    return render_template("competitions.html", competitions=competitions)
-
-
-@app.route("/fixtures")
-def fixtures():
-    conn = get_connection()
-    cursor = conn.cursor()
-
-    cursor.execute("""
-        SELECT 
-            f.RoundName,
-            hs.SchoolName AS HomeSchool,
-            aw.SchoolName AS AwaySchool,
-            f.MatchDate,
-            f.Venue,
-            f.HomeScore,
-            f.AwayScore,
-            f.Status
-        FROM Fixtures f
-        LEFT JOIN Schools hs ON f.HomeSchoolID = hs.SchoolID
-        LEFT JOIN Schools aw ON f.AwaySchoolID = aw.SchoolID
-        ORDER BY f.MatchDate
-    """)
-
-    fixtures = cursor.fetchall()
-    conn.close()
-
-    return render_template("fixtures.html", fixtures=fixtures)
+    return render_template(
+        "module_list.html",
+        module=module,
+        config=config,
+        columns=columns,
+        records=records
+    )
 
 
->>>>>>> e6bb30e3c32320a55a0a4e3576676ff2cebeab41
 @app.route("/schools")
 def schools():
     conn = get_connection()
@@ -448,11 +397,7 @@ def schools():
     schools = cursor.fetchall()
     conn.close()
 
-<<<<<<< HEAD
-    return render_template("schools.html", schools=schools, entities=ENTITIES)
-=======
     return render_template("schools.html", schools=schools)
->>>>>>> e6bb30e3c32320a55a0a4e3576676ff2cebeab41
 
 
 @app.route("/schools/add", methods=["GET", "POST"])
@@ -481,11 +426,7 @@ def add_school():
         flash("School added successfully.", "success")
         return redirect(url_for("schools"))
 
-<<<<<<< HEAD
-    return render_template("school_form.html", school=None, entities=ENTITIES)
-=======
     return render_template("school_form.html", school=None)
->>>>>>> e6bb30e3c32320a55a0a4e3576676ff2cebeab41
 
 
 @app.route("/schools/edit/<int:school_id>", methods=["GET", "POST"])
@@ -529,11 +470,7 @@ def edit_school(school_id):
     school = cursor.fetchone()
     conn.close()
 
-<<<<<<< HEAD
-    return render_template("school_form.html", school=school, entities=ENTITIES)
-=======
     return render_template("school_form.html", school=school)
->>>>>>> e6bb30e3c32320a55a0a4e3576676ff2cebeab41
 
 
 @app.route("/schools/delete/<int:school_id>", methods=["POST"])
@@ -582,15 +519,9 @@ def register_school():
         conn.close()
 
         flash("School registration submitted successfully.", "success")
-<<<<<<< HEAD
         return redirect(url_for("admin_dashboard"))
 
-    return render_template("register_school.html", entities=ENTITIES)
-=======
-        return redirect(url_for("index"))
-
     return render_template("register_school.html")
->>>>>>> e6bb30e3c32320a55a0a4e3576676ff2cebeab41
 
 
 @app.route("/upload-schools", methods=["GET", "POST"])
@@ -622,11 +553,7 @@ def upload_schools():
             "Region",
             "ContactName",
             "Email",
-<<<<<<< HEAD
-            "Phone",
-=======
             "Phone"
->>>>>>> e6bb30e3c32320a55a0a4e3576676ff2cebeab41
         ]
 
         for col in required_columns:
@@ -682,11 +609,7 @@ def upload_schools():
                     region,
                     contact_name,
                     email,
-<<<<<<< HEAD
-                    phone,
-=======
                     phone
->>>>>>> e6bb30e3c32320a55a0a4e3576676ff2cebeab41
                 )
 
                 inserted += 1
@@ -702,97 +625,34 @@ def upload_schools():
 
         flash(
             f"Upload completed. Processed: {len(df)}, inserted: {inserted}, skipped/already existed: {skipped}",
-<<<<<<< HEAD
-            "success",
-=======
             "success"
->>>>>>> e6bb30e3c32320a55a0a4e3576676ff2cebeab41
         )
 
         return redirect(url_for("upload_schools"))
 
-<<<<<<< HEAD
-    return render_template("upload_schools.html", entities=ENTITIES)
+    return render_template("upload_schools.html")
 
 
 @app.route("/competitions")
 def competitions():
-=======
-    return render_template("upload_schools.html")
-
-
-@app.route("/downloads")
-def downloads():
-    return render_template("downloads.html")
-
-
-@app.route("/contact")
-def contact():
-    return render_template("contact.html")
-
-
-@app.route("/admin")
-def admin_dashboard():
-    conn = get_connection()
-    cursor = conn.cursor()
-
-    cursor.execute("SELECT COUNT(*) FROM Schools")
-    school_count = cursor.fetchone()[0]
-
-    cursor.execute("SELECT COUNT(*) FROM Competitions")
-    competition_count = cursor.fetchone()[0]
-
-    cursor.execute("SELECT COUNT(*) FROM Fixtures")
-    fixture_count = cursor.fetchone()[0]
-
-    cursor.execute("SELECT COUNT(*) FROM Players")
-    player_count = cursor.fetchone()[0]
-
-    cursor.execute("SELECT COUNT(*) FROM Results")
-    result_count = cursor.fetchone()[0]
-
-    conn.close()
-
-    return render_template(
-        "admin_dashboard.html",
-        school_count=school_count,
-        competition_count=competition_count,
-        fixture_count=fixture_count,
-        player_count=player_count,
-        result_count=result_count
-    )
-
-@app.route("/players")
-def players():
->>>>>>> e6bb30e3c32320a55a0a4e3576676ff2cebeab41
     conn = get_connection()
     cursor = conn.cursor()
 
     cursor.execute("""
         SELECT *
-<<<<<<< HEAD
         FROM Competitions
         ORDER BY CompetitionID DESC
     """)
 
     competitions = cursor.fetchall()
-=======
-        FROM Players
-        ORDER BY PlayerID DESC
-    """)
-
-    players = cursor.fetchall()
->>>>>>> e6bb30e3c32320a55a0a4e3576676ff2cebeab41
     columns = [column[0] for column in cursor.description]
 
     conn.close()
 
-<<<<<<< HEAD
     return render_template(
         "competitions.html",
         competitions=competitions,
-        columns=columns,
-        entities=ENTITIES,
+        columns=columns
     )
 
 
@@ -815,13 +675,9 @@ def fixtures():
     return render_template(
         "fixtures.html",
         fixtures=fixtures,
-        columns=columns,
-        entities=ENTITIES,
+        columns=columns
     )
 
-=======
-    return render_template("players.html", players=players, columns=columns)
->>>>>>> e6bb30e3c32320a55a0a4e3576676ff2cebeab41
 
 @app.route("/results")
 def results():
@@ -839,37 +695,26 @@ def results():
 
     conn.close()
 
-<<<<<<< HEAD
     return render_template(
         "results.html",
         results=results,
-        columns=columns,
-        entities=ENTITIES,
+        columns=columns
     )
 
 
-# =========================================================
-# STATIC CONTENT ROUTES
-# =========================================================
+# The /players URL is handled by the FIFA generic route above through ENTITIES["players"].
+# It displays whatever fields are currently in the Players table.
+
 
 @app.route("/downloads")
 def downloads():
-    return render_template("downloads.html", entities=ENTITIES)
+    return render_template("downloads.html")
 
 
 @app.route("/contact")
 def contact():
-    return render_template("contact.html", entities=ENTITIES)
+    return render_template("contact.html")
 
-
-# =========================================================
-# MAIN
-# =========================================================
 
 if __name__ == "__main__":
     app.run(debug=True)
-=======
-    return render_template("results.html", results=results, columns=columns)
-if __name__ == "__main__":
-    app.run(debug=True)
->>>>>>> e6bb30e3c32320a55a0a4e3576676ff2cebeab41
