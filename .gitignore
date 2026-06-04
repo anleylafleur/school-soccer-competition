@@ -1,6 +1,43 @@
+<<<<<<< HEAD
 .venv/
 .venv-1/
 __pycache__/
 *.pyc
 .env
 uploads/
+=======
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Virtual Environments
+venv/
+.venv/
+env/
+
+# Environment Variables
+.env
+
+# Uploads
+uploads/
+
+# VS Code
+.vscode/
+
+# Windows
+Thumbs.db
+Desktop.ini
+
+# Logs
+*.log
+
+# Excel temp files
+~$*.xlsx
+
+# Python cache
+.pytest_cache/
+
+# Render
+render.yaml.local
+>>>>>>> e6bb30e3c32320a55a0a4e3576676ff2cebeab41

@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+<<<<<<< HEAD
 {% block content %}
 <div class="container-fluid">
     <h2 class="mb-3">Competitions</h2>
@@ -10,3 +11,30 @@
     </div>
 </div>
 {% endblock %}
+=======
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-3">Competitions</h2>
+
+    <table class="table table-striped table-bordered">
+        <thead class="table-dark">
+            <tr>
+                {% for col in columns %}
+                <th>{{ col }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in competitions %}
+            <tr>
+                {% for value in row %}
+                <td>{{ value }}</td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+>>>>>>> e6bb30e3c32320a55a0a4e3576676ff2cebeab41

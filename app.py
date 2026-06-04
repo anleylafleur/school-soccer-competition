@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 from flask import Flask, render_template, request, redirect, url_for, flash, abort
 from db import get_connection
 from werkzeug.utils import secure_filename
@@ -10,6 +11,16 @@ import pandas as pd
 # FLASK APP CONFIGURATION
 # =========================================================
 
+=======
+from flask import Flask, render_template, request, redirect, url_for, flash
+from db import get_connection
+from werkzeug.utils import secure_filename
+
+import pandas as pd
+import os
+
+
+>>>>>>> e6bb30e3c32320a55a0a4e3576676ff2cebeab41
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY", "school-soccer-secret")
 
@@ -18,6 +29,7 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
 
+<<<<<<< HEAD
 # =========================================================
 # FIFA / REGISTRY HIERARCHY CONFIGURATION
 # World -> Confederations -> Countries -> States/Provinces
@@ -198,6 +210,11 @@ def admin_dashboard():
         school_cards=school_cards,
         entities=ENTITIES,
     )
+=======
+@app.route("/")
+def index():
+    return render_template("index.html")
+>>>>>>> e6bb30e3c32320a55a0a4e3576676ff2cebeab41
 
 
 @app.route("/db-test")
@@ -213,6 +230,7 @@ def db_test():
         return f"DB ERROR: {str(e)}", 500
 
 
+<<<<<<< HEAD
 # =========================================================
 # FIFA / REGISTRY GENERIC CRUD ROUTES
 # =========================================================
@@ -370,6 +388,52 @@ def hierarchy():
 # SCHOOL COMPETITION ROUTES
 # =========================================================
 
+=======
+@app.route("/competitions")
+def competitions():
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT CompetitionID, CompetitionName, GenderCategory, AgeLimit, Year, Status
+        FROM Competitions
+        ORDER BY Year DESC, CompetitionName
+    """)
+
+    competitions = cursor.fetchall()
+    conn.close()
+
+    return render_template("competitions.html", competitions=competitions)
+
+
+@app.route("/fixtures")
+def fixtures():
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT 
+            f.RoundName,
+            hs.SchoolName AS HomeSchool,
+            aw.SchoolName AS AwaySchool,
+            f.MatchDate,
+            f.Venue,
+            f.HomeScore,
+            f.AwayScore,
+            f.Status
+        FROM Fixtures f
+        LEFT JOIN Schools hs ON f.HomeSchoolID = hs.SchoolID
+        LEFT JOIN Schools aw ON f.AwaySchoolID = aw.SchoolID
+        ORDER BY f.MatchDate
+    """)
+
+    fixtures = cursor.fetchall()
+    conn.close()
+
+    return render_template("fixtures.html", fixtures=fixtures)
+
+
+>>>>>>> e6bb30e3c32320a55a0a4e3576676ff2cebeab41
 @app.route("/schools")
 def schools():
     conn = get_connection()
@@ -384,7 +448,11 @@ def schools():
     schools = cursor.fetchall()
     conn.close()
 
+<<<<<<< HEAD
     return render_template("schools.html", schools=schools, entities=ENTITIES)
+=======
+    return render_template("schools.html", schools=schools)
+>>>>>>> e6bb30e3c32320a55a0a4e3576676ff2cebeab41
 
 
 @app.route("/schools/add", methods=["GET", "POST"])
@@ -413,7 +481,11 @@ def add_school():
         flash("School added successfully.", "success")
         return redirect(url_for("schools"))
 
+<<<<<<< HEAD
     return render_template("school_form.html", school=None, entities=ENTITIES)
+=======
+    return render_template("school_form.html", school=None)
+>>>>>>> e6bb30e3c32320a55a0a4e3576676ff2cebeab41
 
 
 @app.route("/schools/edit/<int:school_id>", methods=["GET", "POST"])
@@ -457,7 +529,11 @@ def edit_school(school_id):
     school = cursor.fetchone()
     conn.close()
 
+<<<<<<< HEAD
     return render_template("school_form.html", school=school, entities=ENTITIES)
+=======
+    return render_template("school_form.html", school=school)
+>>>>>>> e6bb30e3c32320a55a0a4e3576676ff2cebeab41
 
 
 @app.route("/schools/delete/<int:school_id>", methods=["POST"])
@@ -506,9 +582,15 @@ def register_school():
         conn.close()
 
         flash("School registration submitted successfully.", "success")
+<<<<<<< HEAD
         return redirect(url_for("admin_dashboard"))
 
     return render_template("register_school.html", entities=ENTITIES)
+=======
+        return redirect(url_for("index"))
+
+    return render_template("register_school.html")
+>>>>>>> e6bb30e3c32320a55a0a4e3576676ff2cebeab41
 
 
 @app.route("/upload-schools", methods=["GET", "POST"])
@@ -540,7 +622,11 @@ def upload_schools():
             "Region",
             "ContactName",
             "Email",
+<<<<<<< HEAD
             "Phone",
+=======
+            "Phone"
+>>>>>>> e6bb30e3c32320a55a0a4e3576676ff2cebeab41
         ]
 
         for col in required_columns:
@@ -596,7 +682,11 @@ def upload_schools():
                     region,
                     contact_name,
                     email,
+<<<<<<< HEAD
                     phone,
+=======
+                    phone
+>>>>>>> e6bb30e3c32320a55a0a4e3576676ff2cebeab41
                 )
 
                 inserted += 1
@@ -612,30 +702,92 @@ def upload_schools():
 
         flash(
             f"Upload completed. Processed: {len(df)}, inserted: {inserted}, skipped/already existed: {skipped}",
+<<<<<<< HEAD
             "success",
+=======
+            "success"
+>>>>>>> e6bb30e3c32320a55a0a4e3576676ff2cebeab41
         )
 
         return redirect(url_for("upload_schools"))
 
+<<<<<<< HEAD
     return render_template("upload_schools.html", entities=ENTITIES)
 
 
 @app.route("/competitions")
 def competitions():
+=======
+    return render_template("upload_schools.html")
+
+
+@app.route("/downloads")
+def downloads():
+    return render_template("downloads.html")
+
+
+@app.route("/contact")
+def contact():
+    return render_template("contact.html")
+
+
+@app.route("/admin")
+def admin_dashboard():
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT COUNT(*) FROM Schools")
+    school_count = cursor.fetchone()[0]
+
+    cursor.execute("SELECT COUNT(*) FROM Competitions")
+    competition_count = cursor.fetchone()[0]
+
+    cursor.execute("SELECT COUNT(*) FROM Fixtures")
+    fixture_count = cursor.fetchone()[0]
+
+    cursor.execute("SELECT COUNT(*) FROM Players")
+    player_count = cursor.fetchone()[0]
+
+    cursor.execute("SELECT COUNT(*) FROM Results")
+    result_count = cursor.fetchone()[0]
+
+    conn.close()
+
+    return render_template(
+        "admin_dashboard.html",
+        school_count=school_count,
+        competition_count=competition_count,
+        fixture_count=fixture_count,
+        player_count=player_count,
+        result_count=result_count
+    )
+
+@app.route("/players")
+def players():
+>>>>>>> e6bb30e3c32320a55a0a4e3576676ff2cebeab41
     conn = get_connection()
     cursor = conn.cursor()
 
     cursor.execute("""
         SELECT *
+<<<<<<< HEAD
         FROM Competitions
         ORDER BY CompetitionID DESC
     """)
 
     competitions = cursor.fetchall()
+=======
+        FROM Players
+        ORDER BY PlayerID DESC
+    """)
+
+    players = cursor.fetchall()
+>>>>>>> e6bb30e3c32320a55a0a4e3576676ff2cebeab41
     columns = [column[0] for column in cursor.description]
 
     conn.close()
 
+<<<<<<< HEAD
     return render_template(
         "competitions.html",
         competitions=competitions,
@@ -667,6 +819,9 @@ def fixtures():
         entities=ENTITIES,
     )
 
+=======
+    return render_template("players.html", players=players, columns=columns)
+>>>>>>> e6bb30e3c32320a55a0a4e3576676ff2cebeab41
 
 @app.route("/results")
 def results():
@@ -684,6 +839,7 @@ def results():
 
     conn.close()
 
+<<<<<<< HEAD
     return render_template(
         "results.html",
         results=results,
@@ -712,3 +868,8 @@ def contact():
 
 if __name__ == "__main__":
     app.run(debug=True)
+=======
+    return render_template("results.html", results=results, columns=columns)
+if __name__ == "__main__":
+    app.run(debug=True)
+>>>>>>> e6bb30e3c32320a55a0a4e3576676ff2cebeab41
