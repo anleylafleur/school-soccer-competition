@@ -391,15 +391,16 @@ def results():
     cursor = conn.cursor()
 
     cursor.execute("""
-        SELECT ResultID, FixtureID, HomeScore, AwayScore, WinnerSchoolID, Status
+        SELECT *
         FROM Results
         ORDER BY ResultID DESC
     """)
 
     results = cursor.fetchall()
+    columns = [column[0] for column in cursor.description]
+
     conn.close()
 
-    return render_template("results.html", results=results)
-
+    return render_template("results.html", results=results, columns=columns)
 if __name__ == "__main__":
     app.run(debug=True)
