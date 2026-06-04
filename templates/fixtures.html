@@ -1,48 +1,34 @@
 {% extends "base.html" %}
-<<<<<<< HEAD
+
 {% block content %}
-<div class="container-fluid">
+<div class="container mt-4">
+
     <h2 class="mb-3">Fixtures</h2>
+
     <div class="table-responsive">
         <table class="table table-striped table-bordered table-sm">
-            <thead class="table-dark"><tr>{% for col in columns %}<th>{{ col }}</th>{% endfor %}</tr></thead>
-            <tbody>{% for row in fixtures %}<tr>{% for value in row %}<td>{{ value }}</td>{% endfor %}</tr>{% endfor %}</tbody>
+            <thead class="table-dark">
+                <tr>
+                    {% for col in columns %}
+                    <th>{{ col }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in fixtures %}
+                <tr>
+                    {% for value in row %}
+                    <td>{{ value }}</td>
+                    {% endfor %}
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="{{ columns|length }}" class="text-center">No fixtures found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
         </table>
     </div>
+
 </div>
 {% endblock %}
-=======
-
-{% block content %}
-
-<h2>Fixtures & Results</h2>
-
-<table class="table table-bordered table-striped mt-3">
-    <thead class="table-success">
-        <tr>
-            <th>Round</th>
-            <th>Home School</th>
-            <th>Away School</th>
-            <th>Date</th>
-            <th>Venue</th>
-            <th>Score</th>
-            <th>Status</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for f in fixtures %}
-        <tr>
-            <td>{{ f.RoundName }}</td>
-            <td>{{ f.HomeSchool }}</td>
-            <td>{{ f.AwaySchool }}</td>
-            <td>{{ f.MatchDate }}</td>
-            <td>{{ f.Venue }}</td>
-            <td>{{ f.HomeScore }} - {{ f.AwayScore }}</td>
-            <td>{{ f.Status }}</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
-
-{% endblock %}
->>>>>>> e6bb30e3c32320a55a0a4e3576676ff2cebeab41
