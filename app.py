@@ -39,7 +39,7 @@ def competitions():
 
     cursor.execute("""
         SELECT CompetitionID, CompetitionName, GenderCategory, AgeLimit, Year, Status
-        FROM Competitions
+        FROM Competition
         ORDER BY Year DESC, CompetitionName
     """)
 
