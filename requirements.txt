@@ -3,8 +3,4 @@ gunicorn
 pyodbc
 pandas
 openpyxl
-<<<<<<< HEAD
 python-dotenv
-=======
-python-dotenv
->>>>>>> e6bb30e3c32320a55a0a4e3576676ff2cebeab41
