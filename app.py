@@ -184,14 +184,15 @@ def db_test():
 
 @app.route("/admin")
 def admin_dashboard():
+
     fifa_cards = []
-    school_cards = []
 
     for entity, config in ENTITIES.items():
+
         try:
             count = fetch_count(config["table"])
-        except Exception:
-            count = "N/A"
+        except:
+            count = 0
 
         fifa_cards.append({
             "name": config["title"],
@@ -199,25 +200,19 @@ def admin_dashboard():
             "url": url_for("list_records", entity=entity)
         })
 
-    for module, config in SCHOOL_MODULES.items():
-        try:
-            count = fetch_count(config["table"])
-        except Exception:
-            count = "N/A"
-
-        school_cards.append({
-            "name": config["title"],
-            "count": count,
-            "url": url_for("generic_module_list", module=module)
-        })
+    school_count = fetch_count("Schools")
+    competition_count = fetch_count("Competitions")
+    fixture_count = fetch_count("Fixtures")
+    result_count = fetch_count("Results")
 
     return render_template(
         "admin_dashboard.html",
         fifa_cards=fifa_cards,
-        school_cards=school_cards
+        school_count=school_count,
+        competition_count=competition_count,
+        fixture_count=fixture_count,
+        result_count=result_count
     )
-
-
 # ============================================================
 # FIFA GENERIC CRUD ROUTES
 # ============================================================
@@ -366,21 +361,6 @@ def hierarchy():
 # SCHOOL COMPETITION MODULE ROUTES
 # ============================================================
 
-@app.route("/module/<module>")
-def generic_module_list(module):
-    if module not in SCHOOL_MODULES:
-        return "Module not found", 404
-
-    config = SCHOOL_MODULES[module]
-    records, columns = fetch_all_from_table(config["table"], config.get("order_by"))
-
-    return render_template(
-        "module_list.html",
-        module=module,
-        config=config,
-        columns=columns,
-        records=records
-    )
 
 
 @app.route("/schools")
