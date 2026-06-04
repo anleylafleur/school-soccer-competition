@@ -20,16 +20,9 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt .
-<<<<<<< HEAD
-RUN pip install --no-cache-dir -r requirements.txt
-
-COPY . .
-CMD gunicorn app:app --bind 0.0.0.0:$PORT
-=======
 
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
 CMD gunicorn app:app --bind 0.0.0.0:$PORT
->>>>>>> e6bb30e3c32320a55a0a4e3576676ff2cebeab41
