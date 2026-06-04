@@ -1,10 +1,7 @@
 import os
 import pyodbc
 
-
-
 pyodbc.pooling = False
-
 
 def get_connection():
     return pyodbc.connect(
