@@ -244,8 +244,7 @@ def admin_dashboard():
     )
     
     @app.route("/admin")
-@admin_required
-def admin_dashboard():
+    def admin_dashboard():
     return dashboard()
 # ============================================================
 # FIFA GENERIC CRUD ROUTES
