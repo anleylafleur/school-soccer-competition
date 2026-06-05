@@ -5,6 +5,8 @@ from werkzeug.utils import secure_filename
 import pandas as pd
 import os
 
+from functools import wraps
+from flask import session
 
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY", "school-soccer-secret")
@@ -13,6 +15,22 @@ UPLOAD_FOLDER = "uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
+ADMIN_USERNAME = os.getenv("ADMIN_USERNAME", "admin")
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "admin123")
+
+
+def is_admin():
+    return session.get("role") == "admin"
+
+
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not is_admin():
+            flash("Admin access required.", "danger")
+            return redirect(url_for("login"))
+        return f(*args, **kwargs)
+    return decorated_function
 
 # ============================================================
 # FIFA REGISTRY ENTITY CONFIGURATION
@@ -183,7 +201,6 @@ def db_test():
 
 
 @app.route("/admin")
-@admin_required
 def admin_dashboard():
 
     fifa_cards = []
@@ -224,55 +241,19 @@ def list_records(entity):
         return "Entity not found", 404
 
     config = ENTITIES[entity]
-    search = request.args.get("search", "").strip()
-
-    conn = get_connection()
-    cursor = conn.cursor()
-
-    if search:
-        searchable_fields = config["fields"]
-
-        where_clause = " OR ".join([
-            f"CAST({field} AS NVARCHAR(MAX)) LIKE ?"
-            for field in searchable_fields
-        ])
-
-        params = [f"%{search}%"] * len(searchable_fields)
-
-        sql = f"""
-            SELECT *
-            FROM {config['table']}
-            WHERE {where_clause}
-            ORDER BY {config['order_by']}
-        """
-
-        cursor.execute(sql, params)
-    else:
-        sql = f"""
-            SELECT *
-            FROM {config['table']}
-            ORDER BY {config['order_by']}
-        """
-        cursor.execute(sql)
-
-    records = cursor.fetchall()
-    columns = [column[0] for column in cursor.description]
-
-    conn.close()
+    records, columns = fetch_all_from_table(config["table"], config.get("order_by"))
 
     return render_template(
         "list.html",
         entity=entity,
         config=config,
-        records=records,
         columns=columns,
-        search=search,
-        is_admin=is_admin()
+        records=records,
+        mode="fifa"
     )
 
 
 @app.route("/<entity>/create", methods=["GET", "POST"])
-@admin_required
 def create_record(entity):
     if entity not in ENTITIES:
         return "Entity not found", 404
@@ -310,7 +291,6 @@ def create_record(entity):
 
 
 @app.route("/<entity>/edit/<int:record_id>", methods=["GET", "POST"])
-@admin_required
 def edit_record(entity, record_id):
     if entity not in ENTITIES:
         return "Entity not found", 404
@@ -351,7 +331,6 @@ def edit_record(entity, record_id):
 
 
 @app.route("/<entity>/delete/<int:record_id>", methods=["POST"])
-@admin_required
 def delete_record(entity, record_id):
     if entity not in ENTITIES:
         return "Entity not found", 404
@@ -420,7 +399,6 @@ def schools():
 
 
 @app.route("/schools/add", methods=["GET", "POST"])
-@admin_required
 def add_school():
     if request.method == "POST":
         school_name = request.form["school_name"]
@@ -450,7 +428,6 @@ def add_school():
 
 
 @app.route("/schools/edit/<int:school_id>", methods=["GET", "POST"])
-@admin_required
 def edit_school(school_id):
     conn = get_connection()
     cursor = conn.cursor()
@@ -509,7 +486,6 @@ def delete_school(school_id):
 
 
 @app.route("/register-school", methods=["GET", "POST"])
-@admin_required
 def register_school():
     if request.method == "POST":
         school_name = request.form["school_name"]
@@ -547,7 +523,6 @@ def register_school():
 
 
 @app.route("/upload-schools", methods=["GET", "POST"])
-@admin_required
 def upload_schools():
     if request.method == "POST":
 
@@ -737,6 +712,28 @@ def downloads():
 @app.route("/contact")
 def contact():
     return render_template("contact.html")
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    if request.method == "POST":
+        username = request.form.get("username")
+        password = request.form.get("password")
+
+        if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
+            session["role"] = "admin"
+            flash("Logged in as Admin.", "success")
+            return redirect(url_for("admin_dashboard"))
+
+        flash("Invalid username or password.", "danger")
+
+    return render_template("login.html")
+
+
+@app.route("/logout")
+def logout():
+    session.clear()
+    flash("Logged out successfully.", "success")
+    return redirect(url_for("index"))
 
 
 if __name__ == "__main__":

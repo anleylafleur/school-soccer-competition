@@ -22,7 +22,13 @@
 
         <div class="navbar-nav">
 
-            <a class="nav-link" href="/admin">Dashboard</a>
+            {% if session.get("role") == "admin" %}
+    <a class="nav-link" href="/admin">Admin</a>
+    <a class="nav-link" href="/upload-schools">Upload Schools</a>
+    <a class="nav-link" href="/logout">Logout</a>
+{% else %}
+    <a class="nav-link" href="/login">Admin Login</a>
+{% endif %}
 
             <a class="nav-link" href="/worlds">Worlds</a>
             <a class="nav-link" href="/confederations">Confederations</a>
