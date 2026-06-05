@@ -4,3 +4,4 @@ pyodbc
 pandas
 openpyxl
 python-dotenv
+werkzeug

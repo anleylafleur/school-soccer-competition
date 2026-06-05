@@ -7,7 +7,34 @@ import os
 
 
 app = Flask(__name__)
-app.secret_key = os.getenv("SECRET_KEY", "school-soccer-secret")
+app.secret_key = os.getenv("SECRET_KEY", "987654")
+
+def is_logged_in():
+    return "user_id" in session
+
+
+def is_admin():
+    return session.get("role") == "Admin"
+
+
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not is_logged_in():
+            return redirect(url_for("login"))
+        return f(*args, **kwargs)
+    return decorated_function
+
+
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not is_admin():
+            flash("Admin access required.", "danger")
+            return redirect(url_for("dashboard"))
+        return f(*args, **kwargs)
+    return decorated_function
+
 
 UPLOAD_FOLDER = "uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -166,8 +193,9 @@ def fetch_one_by_id(table_name, pk, record_id):
 
 @app.route("/")
 def index():
-    return redirect(url_for("admin_dashboard"))
-
+    if is_logged_in():
+        return redirect(url_for("dashboard"))
+    return redirect(url_for("login"))
 
 @app.route("/db-test")
 def db_test():
@@ -182,7 +210,7 @@ def db_test():
         return f"DB ERROR: {str(e)}", 500
 
 
-@app.route("/admin")
+@app.route("/dashboard")
 @admin_required
 def admin_dashboard():
 
@@ -214,6 +242,11 @@ def admin_dashboard():
         fixture_count=fixture_count,
         result_count=result_count
     )
+    
+    @app.route("/admin")
+@admin_required
+def admin_dashboard():
+    return dashboard()
 # ============================================================
 # FIFA GENERIC CRUD ROUTES
 # ============================================================
