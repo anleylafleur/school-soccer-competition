@@ -46,6 +46,21 @@ def admin_dashboard():
     conn = get_connection()
     cursor = conn.cursor()
 
+    fifa_cards = []
+
+    for entity, config in ENTITIES.items():
+        try:
+            cursor.execute(f"SELECT COUNT(*) FROM {config['table']}")
+            count = cursor.fetchone()[0]
+        except Exception:
+            count = "N/A"
+
+        fifa_cards.append({
+            "title": config["title"],
+            "url": url_for("list_records", entity=entity),
+            "count": count
+        })
+
     cursor.execute("SELECT COUNT(*) FROM Schools")
     school_count = cursor.fetchone()[0]
 
@@ -55,9 +70,6 @@ def admin_dashboard():
     cursor.execute("SELECT COUNT(*) FROM Fixtures")
     fixture_count = cursor.fetchone()[0]
 
-    cursor.execute("SELECT COUNT(*) FROM Players")
-    player_count = cursor.fetchone()[0]
-
     cursor.execute("SELECT COUNT(*) FROM Results")
     result_count = cursor.fetchone()[0]
 
@@ -65,10 +77,10 @@ def admin_dashboard():
 
     return render_template(
         "admin_dashboard.html",
+        fifa_cards=fifa_cards,
         school_count=school_count,
         competition_count=competition_count,
         fixture_count=fixture_count,
-        player_count=player_count,
         result_count=result_count
     )
 
@@ -419,6 +431,5 @@ def list_records(entity):
         records=records,
         columns=columns
     )
-
 if __name__ == "__main__":
     app.run(debug=True)
