@@ -479,6 +479,58 @@ def downloads():
 def contact():
     return render_template("contact.html")
 
+@app.route("/signup", methods=["GET", "POST"])
+def signup():
+    """
+    Temporary signup page.
+
+    This route exists because login.html contains:
+        url_for('signup')
+
+    Without this route, Flask raises:
+        BuildError: Could not build url for endpoint 'signup'
+
+    Signup is currently disabled. When you are ready to allow
+    self-registration, replace this body with user creation logic.
+    """
+    if request.method == "POST":
+        flash("Signup is not enabled yet. Please contact the administrator.", "warning")
+        return redirect(url_for("login"))
+
+    # Use signup.html if you have created it. Otherwise show a safe fallback page.
+    signup_template_path = os.path.join(app.template_folder or "templates", "signup.html")
+    if os.path.exists(signup_template_path):
+        return render_template("signup.html")
+
+    return """
+    <!doctype html>
+    <html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Signup not enabled</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    </head>
+    <body class="bg-light">
+        <div class="container py-5">
+            <div class="row justify-content-center">
+                <div class="col-md-6">
+                    <div class="card shadow-sm border-0">
+                        <div class="card-body p-4 text-center">
+                            <h3 class="mb-3">Signup is not enabled yet</h3>
+                            <p class="text-muted">
+                                Please contact the administrator to create a user account.
+                            </p>
+                            <a class="btn btn-primary" href="/login">Back to login</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+    </html>
+    """
+
 @app.route("/<entity>")
 def list_records(entity):
     if entity not in ENTITIES:
@@ -507,25 +559,7 @@ def list_records(entity):
         records=records,
         columns=columns
     )
-    
-    
-    
-def login_required(f):
 
-    @wraps(f)
 
-    def wrapper(*args, **kwargs):
-
-        if "user_id" not in session:
-
-            return redirect(
-                url_for("login")
-            )
-
-        return f(*args, **kwargs)
-
-    return wrapper    
-    
-    
 if __name__ == "__main__":
     app.run(debug=True)
