@@ -5,6 +5,15 @@ from werkzeug.utils import secure_filename
 import os
 import pandas as pd
 
+from werkzeug.security import (
+    generate_password_hash,
+    check_password_hash
+)
+
+from functools import wraps
+
+from flask import session
+
 
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY", "school-soccer-secret")
@@ -25,8 +34,9 @@ ENTITIES = {
 
 @app.route("/")
 def index():
-    return redirect(url_for("admin_dashboard"))
-
+    if "user_id" in session:
+        return redirect(url_for("admin_dashboard"))
+    return redirect(url_for("login"))
 
 @app.route("/db-test")
 def db_test():
@@ -41,8 +51,54 @@ def db_test():
         return f"DB ERROR: {str(e)}", 500
 
 
+@app.route("/login", methods=["GET","POST"])
+def login():
+
+    if request.method == "POST":
+
+        email = request.form["email"]
+        password = request.form["password"]
+
+        conn = get_connection()
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            SELECT UserID,
+                   Email,
+                   PasswordHash
+            FROM Users
+            WHERE Email = ?
+        """, email)
+
+        user = cursor.fetchone()
+
+        conn.close()
+
+        if user and check_password_hash(
+                user.PasswordHash,
+                password):
+
+            session["user_id"] = user.UserID
+            session["email"] = user.Email
+
+            return redirect(url_for("admin_dashboard"))
+
+        flash(
+            "Invalid login",
+            "danger"
+        )
+
+    return render_template("login.html")
+
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect(url_for("login"))
+
 @app.route("/admin")
+@login_required
 def admin_dashboard():
+    
     conn = get_connection()
     cursor = conn.cursor()
 
@@ -431,5 +487,25 @@ def list_records(entity):
         records=records,
         columns=columns
     )
+    
+    
+    
+def login_required(f):
+
+    @wraps(f)
+
+    def wrapper(*args, **kwargs):
+
+        if "user_id" not in session:
+
+            return redirect(
+                url_for("login")
+            )
+
+        return f(*args, **kwargs)
+
+    return wrapper    
+    
+    
 if __name__ == "__main__":
     app.run(debug=True)
