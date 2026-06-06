@@ -481,55 +481,49 @@ def contact():
 
 @app.route("/signup", methods=["GET", "POST"])
 def signup():
-    """
-    Temporary signup page.
-
-    This route exists because login.html contains:
-        url_for('signup')
-
-    Without this route, Flask raises:
-        BuildError: Could not build url for endpoint 'signup'
-
-    Signup is currently disabled. When you are ready to allow
-    self-registration, replace this body with user creation logic.
-    """
     if request.method == "POST":
-        flash("Signup is not enabled yet. Please contact the administrator.", "warning")
-        return redirect(url_for("login"))
+        username = request.form.get("username", "").strip()
+        email = request.form.get("email", "").strip().lower()
+        password = request.form.get("password", "").strip()
 
-    # Use signup.html if you have created it. Otherwise show a safe fallback page.
-    signup_template_path = os.path.join(app.template_folder or "templates", "signup.html")
-    if os.path.exists(signup_template_path):
-        return render_template("signup.html")
+        if not username or not email or not password:
+            flash("All fields are required.", "danger")
+            return redirect(url_for("signup"))
 
-    return """
-    <!doctype html>
-    <html lang="en">
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>Signup not enabled</title>
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    </head>
-    <body class="bg-light">
-        <div class="container py-5">
-            <div class="row justify-content-center">
-                <div class="col-md-6">
-                    <div class="card shadow-sm border-0">
-                        <div class="card-body p-4 text-center">
-                            <h3 class="mb-3">Signup is not enabled yet</h3>
-                            <p class="text-muted">
-                                Please contact the administrator to create a user account.
-                            </p>
-                            <a class="btn btn-primary" href="/login">Back to login</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </body>
-    </html>
-    """
+        password_hash = generate_password_hash(password)
+
+        try:
+            conn = get_connection()
+            cursor = conn.cursor()
+
+            cursor.execute("""
+                SELECT COUNT(*)
+                FROM Users
+                WHERE Email = ?
+            """, email)
+
+            if cursor.fetchone()[0] > 0:
+                flash("An account with this email already exists.", "danger")
+                conn.close()
+                return redirect(url_for("signup"))
+
+            cursor.execute("""
+                INSERT INTO Users
+                (Username, Email, PasswordHash, Role)
+                VALUES (?, ?, ?, ?)
+            """, username, email, password_hash, "Admin")
+
+            conn.commit()
+            conn.close()
+
+            flash("Account created successfully. Please log in.", "success")
+            return redirect(url_for("login"))
+
+        except Exception as e:
+            flash(f"Signup failed: {str(e)}", "danger")
+            return redirect(url_for("signup"))
+
+    return render_template("signup.html")
 
 @app.route("/<entity>")
 def list_records(entity):
@@ -560,6 +554,29 @@ def list_records(entity):
         columns=columns
     )
 
+@app.route("/create-admin")
+def create_admin():
+    email = "admin@fifaregistry.com"
+    password = "Admin123!"
+    password_hash = generate_password_hash(password)
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        IF EXISTS (SELECT 1 FROM Users WHERE Email = ?)
+            UPDATE Users
+            SET PasswordHash = ?, Role = 'Admin'
+            WHERE Email = ?
+        ELSE
+            INSERT INTO Users (Username, Email, PasswordHash, Role)
+            VALUES ('Admin', ?, ?, 'Admin')
+    """, email, password_hash, email, email, password_hash)
+
+    conn.commit()
+    conn.close()
+
+    return "Admin user created/reset. Email: admin@fifaregistry.com Password: Admin123!"
 
 if __name__ == "__main__":
     app.run(debug=True)
