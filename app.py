@@ -13,6 +13,15 @@ UPLOAD_FOLDER = "uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
+ENTITIES = {
+    "worlds": {"title": "Worlds", "table": "Worlds", "pk": "WorldID", "order_by": "WorldID DESC"},
+    "confederations": {"title": "Confederations", "table": "Confederations", "pk": "ConfederationID", "order_by": "ConfederationID DESC"},
+    "countries": {"title": "Countries", "table": "Countries", "pk": "CountryID", "order_by": "CountryID DESC"},
+    "regions": {"title": "Regions", "table": "Regions", "pk": "RegionID", "order_by": "RegionID DESC"},
+    "associations": {"title": "Associations", "table": "Associations", "pk": "AssociationID", "order_by": "AssociationID DESC"},
+    "clubs": {"title": "Clubs", "table": "Clubs", "pk": "ClubID", "order_by": "ClubID DESC"},
+    "teams": {"title": "Teams", "table": "Teams", "pk": "TeamID", "order_by": "TeamID DESC"},
+}
 
 @app.route("/")
 def index():
@@ -382,6 +391,34 @@ def downloads():
 def contact():
     return render_template("contact.html")
 
+@app.route("/<entity>")
+def list_records(entity):
+    if entity not in ENTITIES:
+        return "Page not found", 404
+
+    config = ENTITIES[entity]
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute(f"""
+        SELECT *
+        FROM {config['table']}
+        ORDER BY {config['order_by']}
+    """)
+
+    records = cursor.fetchall()
+    columns = [column[0] for column in cursor.description]
+
+    conn.close()
+
+    return render_template(
+        "list.html",
+        entity=entity,
+        config=config,
+        records=records,
+        columns=columns
+    )
 
 if __name__ == "__main__":
     app.run(debug=True)
