@@ -22,6 +22,8 @@ UPLOAD_FOLDER = "uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
+
+
 ENTITIES = {
     "worlds": {"title": "Worlds", "table": "Worlds", "pk": "WorldID", "order_by": "WorldID DESC"},
     "confederations": {"title": "Confederations", "table": "Confederations", "pk": "ConfederationID", "order_by": "ConfederationID DESC"},
@@ -31,6 +33,24 @@ ENTITIES = {
     "clubs": {"title": "Clubs", "table": "Clubs", "pk": "ClubID", "order_by": "ClubID DESC"},
     "teams": {"title": "Teams", "table": "Teams", "pk": "TeamID", "order_by": "TeamID DESC"},
 }
+
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if "user_id" not in session:
+            return redirect(url_for("login"))
+        return f(*args, **kwargs)
+    return decorated_function
+
+
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if session.get("role") != "Admin":
+            flash("Admin access required.", "danger")
+            return redirect(url_for("admin_dashboard"))
+        return f(*args, **kwargs)
+    return decorated_function
 
 @app.route("/")
 def index():
