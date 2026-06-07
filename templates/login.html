@@ -1,86 +1,110 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <title>FIFA Registry Login</title>
 
-<title>Login</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-      rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
-<style>
+    <style>
+        body{
+            background:#f4f6f9;
+        }
 
-body{
-    background:#f5f5f5;
-}
+        .login-card{
+            max-width:500px;
+            margin:auto;
+            margin-top:80px;
+            border-radius:15px;
+            box-shadow:0 0 15px rgba(0,0,0,.15);
+        }
 
-.login-card{
-    max-width:450px;
-    margin:auto;
-    margin-top:120px;
-}
+        .header{
+            background:#003366;
+            color:white;
+            padding:20px;
+            text-align:center;
+            border-radius:15px 15px 0 0;
+        }
 
-</style>
-
+        .logo{
+            font-size:28px;
+            font-weight:bold;
+        }
+    </style>
 </head>
-
 <body>
 
 <div class="container">
 
-<div class="card shadow login-card">
+    <div class="card login-card">
 
-<div class="card-body p-5">
+        <div class="header">
+            <div class="logo">⚽ FIFA Registry</div>
+            <div>School & Player Registration Portal</div>
+        </div>
 
-<h3 class="text-center mb-4">
-FIFA Registry
-</h3>
+        <div class="card-body p-4">
 
-<form method="POST">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+            {% endwith %}
 
-<div class="mb-3">
-<input
-type="email"
-name="email"
-class="form-control"
-placeholder="Email"
-required>
-</div>
+            <form method="POST">
 
-<div class="mb-3">
-<input
-type="password"
-name="password"
-class="form-control"
-placeholder="Password"
-required>
-</div>
+                <div class="mb-3">
+                    <label class="form-label">
+                        Email Address
+                    </label>
+                    <input
+                        type="email"
+                        name="email"
+                        class="form-control"
+                        required>
+                </div>
 
-<button
-class="btn btn-dark w-100">
+                <div class="mb-3">
+                    <label class="form-label">
+                        Password
+                    </label>
+                    <input
+                        type="password"
+                        name="password"
+                        class="form-control"
+                        required>
+                </div>
 
-Login
+                <div class="d-grid">
+                    <button type="submit"
+                            class="btn btn-primary">
+                        Login
+                    </button>
+                </div>
 
-</button>
+            </form>
 
-</form>
+            <hr>
 
-<div class="text-center mt-3">
+            <div class="text-center">
+                Don't have an account?
+                <a href="{{ url_for('signup') }}">
+                    Create Account
+                </a>
+            </div>
 
-<a href="{{ url_for('signup') }}">
+        </div>
 
-Create Account
-
-</a>
-
-</div>
-
-</div>
-
-</div>
+    </div>
 
 </div>
 
 </body>
-
 </html>

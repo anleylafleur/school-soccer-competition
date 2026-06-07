@@ -71,92 +71,45 @@ def db_test():
         return f"DB ERROR: {str(e)}", 500
 
 
-@app.route("/login", methods=["GET", "POST"])
+@app.route("/login", methods=["GET","POST"])
 def login():
-    if request.method == "POST":
-        email = request.form.get("email", "").strip().lower()
-        password = request.form.get("password", "")
-
-        if not email or not password:
-            flash("Please enter both email and password.", "danger")
-            return redirect(url_for("login"))
-
-        try:
-            conn = get_connection()
-            cursor = conn.cursor()
-
-            cursor.execute("""
-                SELECT UserID, Username, Email, PasswordHash, Role, IsActive
-                FROM Users
-                WHERE LOWER(Email) = ?
-            """, email)
-
-            user = cursor.fetchone()
-            conn.close()
-
-            if not user:
-                flash("No account found with that email address.", "danger")
-                return redirect(url_for("login"))
-
-            if hasattr(user, "IsActive") and user.IsActive == 0:
-                flash("This account is inactive. Please contact the administrator.", "danger")
-                return redirect(url_for("login"))
-
-            if check_password_hash(user.PasswordHash, password):
-                session.clear()
-                session["user_id"] = user.UserID
-                session["username"] = user.Username if hasattr(user, "Username") else ""
-                session["email"] = user.Email
-                session["role"] = user.Role if hasattr(user, "Role") else "User"
-                flash("Login successful.", "success")
-                return redirect(url_for("admin_dashboard"))
-
-            flash("Invalid password.", "danger")
-            return redirect(url_for("login"))
-
-        except Exception as e:
-            flash(f"Login failed: {str(e)}", "danger")
-            return redirect(url_for("login"))
-
-    return render_template("login.html")
-
-
-@app.route("/signup", methods=["GET", "POST"])
-def signup():
 
     if request.method == "POST":
 
-        username = request.form["username"]
         email = request.form["email"]
         password = request.form["password"]
-        confirm_password = request.form["confirm_password"]
-
-        if password != confirm_password:
-            flash("Passwords do not match.", "danger")
-            return redirect(url_for("signup"))
-
-        password_hash = generate_password_hash(password)
 
         conn = get_connection()
         cursor = conn.cursor()
 
         cursor.execute("""
-            INSERT INTO Users
-            (Username, Email, PasswordHash, Role)
-            VALUES (?, ?, ?, ?)
-        """,
-        username,
-        email,
-        password_hash,
-        "User")
+            SELECT UserID,
+                   Email,
+                   PasswordHash
+            FROM Users
+            WHERE Email = ?
+        """, email)
 
-        conn.commit()
+        user = cursor.fetchone()
+
         conn.close()
 
-        flash("Account created successfully.", "success")
-        return redirect(url_for("login"))
+        if user and check_password_hash(
+                user.PasswordHash,
+                password):
 
-    return render_template("signup.html")
+            session["user_id"] = user.UserID
+            session["email"] = user.Email
+
+            return redirect(url_for("admin_dashboard"))
+
+        flash(
+            "Invalid login",
+            "danger"
+        )
+
+    return render_template("login.html")
+
 @app.route("/logout")
 def logout():
     session.clear()
@@ -526,6 +479,52 @@ def downloads():
 def contact():
     return render_template("contact.html")
 
+@app.route("/signup", methods=["GET", "POST"])
+def signup():
+    if request.method == "POST":
+        username = request.form.get("username", "").strip()
+        email = request.form.get("email", "").strip().lower()
+        password = request.form.get("password", "").strip()
+
+        if not username or not email or not password:
+            flash("All fields are required.", "danger")
+            return redirect(url_for("signup"))
+
+        password_hash = generate_password_hash(password)
+
+        try:
+            conn = get_connection()
+            cursor = conn.cursor()
+
+            cursor.execute("""
+                SELECT COUNT(*)
+                FROM Users
+                WHERE Email = ?
+            """, email)
+
+            if cursor.fetchone()[0] > 0:
+                flash("An account with this email already exists.", "danger")
+                conn.close()
+                return redirect(url_for("signup"))
+
+            cursor.execute("""
+                INSERT INTO Users
+                (Username, Email, PasswordHash, Role)
+                VALUES (?, ?, ?, ?)
+            """, username, email, password_hash, "Admin")
+
+            conn.commit()
+            conn.close()
+
+            flash("Account created successfully. Please log in.", "success")
+            return redirect(url_for("login"))
+
+        except Exception as e:
+            flash(f"Signup failed: {str(e)}", "danger")
+            return redirect(url_for("signup"))
+
+    return render_template("signup.html")
+
 @app.route("/<entity>")
 def list_records(entity):
     if entity not in ENTITIES:
@@ -554,6 +553,52 @@ def list_records(entity):
         records=records,
         columns=columns
     )
+
+@app.route("/create-admin")
+def create_admin():
+    email = "admin@fifaregistry.com"
+    password = "Admin123!"
+    password_hash = generate_password_hash(password)
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        IF EXISTS (SELECT 1 FROM Users WHERE Email = ?)
+            UPDATE Users
+            SET PasswordHash = ?, Role = 'Admin'
+            WHERE Email = ?
+        ELSE
+            INSERT INTO Users (Username, Email, PasswordHash, Role)
+            VALUES ('Admin', ?, ?, 'Admin')
+    """, email, password_hash, email, email, password_hash)
+
+    conn.commit()
+    conn.close()
+
+    return "Admin user created/reset. Email: admin@fifaregistry.com Password: Admin123!"
+
+@app.route("/reset-admin")
+def reset_admin():
+    email = "admin@fifaregistry.com"
+    password = "Admin123!"
+    password_hash = generate_password_hash(password)
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        UPDATE Users
+        SET PasswordHash = ?,
+            Role = 'Admin',
+            IsActive = 1
+        WHERE Email = ?
+    """, password_hash, email)
+
+    conn.commit()
+    conn.close()
+
+    return "Admin password reset. Use admin@fifaregistry.com / Admin123!"
 
 if __name__ == "__main__":
     app.run(debug=True)
