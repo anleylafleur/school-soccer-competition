@@ -578,5 +578,27 @@ def create_admin():
 
     return "Admin user created/reset. Email: admin@fifaregistry.com Password: Admin123!"
 
+@app.route("/reset-admin")
+def reset_admin():
+    email = "admin@fifaregistry.com"
+    password = "Admin123!"
+    password_hash = generate_password_hash(password)
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        UPDATE Users
+        SET PasswordHash = ?,
+            Role = 'Admin',
+            IsActive = 1
+        WHERE Email = ?
+    """, password_hash, email)
+
+    conn.commit()
+    conn.close()
+
+    return "Admin password reset. Use admin@fifaregistry.com / Admin123!"
+
 if __name__ == "__main__":
     app.run(debug=True)
